@@ -1,0 +1,66 @@
+// foo
+Hello, World!
+Check it out!
+
+// bar
+More cool stuff!
+
+// files.json
+{
+    "sources": [
+        {"path": "foo", "hash": "<sha-256 hash>"},
+        {"path": "bar", "hash": "<sha-256 hash>"},
+        ...
+    ],
+    "nodes": [
+        // Nodes are floating pieces of code / notes / images etc... that can be linked together with edges
+        //  text/fragment nodes refer to a fragment of text contained in source files
+        //  start and end are offsets within the file, note we do not actually store the content
+        {"type": "text/fragment", "file": 0, "start": 0,  "end": 13}, // Has content "Hello, World!" from file foo
+        {"type": "text/fragment", "file": 0, "start": 14, "end": 27}, // Has content "Check it out!" from file foo
+        {"type": "text/fragment", "file": 1, "start": 0,  "end": 9},  // Has content "More cool" from bar
+        {"type": "text/content", "content": "A note for cool people to find!"},
+        {"type": "image", "path": "..."}
+    ],
+    "edges": [
+        // Edges connect nodes together
+        {"start": 0, "end": 1, "style": "arrow", "direction": "down"},
+        ...
+    ]
+}
+
+// How does this all work?
+First client needs to check that hash of sources match. For users only using the rich client this always holds.
+If the hashes match, then we edit the file with the rich client happily! No problems at all :)
+If the hashes do not match, we must update the json files.
+
+To do this we need to get the previous versions of the source files.
+For simplicity sake let's assume the rich editor stores a cache of all the previous versions.
+We could definitely use the project's VCS to avoid duplication, but it's fine.
+
+Run a diff algorithm between the previous version and the current version.
+For each fragment some combination of three possible situations has happened.
+
+- The fragment remains unmodified but might have moved.
+    This is the easiest case.
+    The diff algorithm can gives us a mapping of offsets in the previous file to offsets in the new file.
+    Simply update the offsets for this fragment and continue onto the next.
+
+- Lines in the middle of the fragment have been modified.
+    This is actually the exact same as the previous case. Since we define fragments as the start and end offsets,
+    and the content around those offsets have not been modified, we can still lookup the offsets in the new file.
+
+- Lines at the start or end of the fragment have been modified.
+    This is where things actually get difficult. There are three cases I think are worth investigating.
+    
+    - The start is at the beginning of a line (ignoring whitespace)
+    - The end is at the end of a line (ignoring whitespace)
+        In these cases the strategy is simple, find the modified line in the new file and use the start/end of the line.
+        We can find the modified line easily if the line is at the start/end of a chunk, otherwise we need to revert
+        to some line matching algorithm (it's constrained within a chunk).
+
+    - The start/end is somewhere else in the line
+        I recommend giving up and letting the user fix it.
+        Alternatively, you could assume the start/end of a line (if it is the start/end of a fragment)
+
+Once you have updated each of the fragment offsets, you only need to update the hashes and you're done.

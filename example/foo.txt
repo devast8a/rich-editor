@@ -1,0 +1,17 @@
+This is a test of the rich-editor json update algorithm!
+
+A fragment starts here!
+You can modify text between the start and end lines,
+without any problems what so ever!
+... and ends here!
+
+Content outside of the fragments can also be modified!
+
+Another fragment starts here!
+The purpose of this algorithm is to allow you to define some point in a file
+and for that point to persist across changes. Even when those changes are not
+made from within the rich-editor.
+and the second fragment ends here!
+
+The file is not parsed. The file does not need to have a specific syntax for this to work.
+You may have any arbitrary text between the start and end of a fragment.

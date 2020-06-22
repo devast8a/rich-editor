@@ -1,0 +1,20 @@
+{
+  "sources": {
+    "s1": {
+      "path": "foo.txt",
+      "hash": "1b927af75800055ab5bb4bc48cdcad003b64148a9e308977c612a90042ff7043"
+    }
+  },
+  "fragments": {
+    "f1": {
+      "source": "s1",
+      "start": 58,
+      "end": 188
+    },
+    "f2": {
+      "source": "s1",
+      "start": 246,
+      "end": 499
+    }
+  }
+}
